@@ -16,3 +16,6 @@ you own project. The installation steps could be as follows:
 ##Documentation
 A quite extensive documentation about the functions can be found inside the
 respective .h - file.
+
+##Bugs
+Please open an issue or create a PQ if you find any bugs
