@@ -1,0 +1,5 @@
+commonlib/test/
+a.out*
+a.out.dSYM/
+*.h.gch
+.idea/
