@@ -1,3 +1,4 @@
+
 /*
 *   Author:             Linus Lagerhjelm
 *   Date:                2015-10-25 
@@ -54,7 +55,6 @@ typedef struct {
     size_t size;
 } __mem_tracker;
 
-
 /**
 * Prints the given error message to standard error and exits the program
 *
@@ -75,13 +75,6 @@ void error(char *message);
 void *salloc(size_t size);
 
 /**
-* When this function is called, memory allocated with salloc() 
-* and memmory allocated elsewhere but registered with mem_reg() 
-* will be free'd
-*/
-void mem_free_func();
-
-/**
 * Register memmory for the library to keep track of for
 * safe removal when mem_free_func() is called.
 * 
@@ -92,15 +85,34 @@ void mem_free_func();
 void mem_reg(void *p);
 
 /**
+*   This is a wrapper function for stdlib's implementatino of free()
+*   and should be used for deallocating memmory allocated using salloc()
+*   or memmory registered with mem_free_func() that needs to be free'd 
+*   before the call to mem_free_func()
+*
+*   Parameter:  (void *) pointer to the memory block to free
+*   Return:     (void)
+*/
+void mem_free(void *p);
+
+/**
+* When this function is called, memory allocated with salloc() 
+* and memmory allocated elsewhere but registered with mem_reg() 
+* will be free'd
+*/
+void mem_free_func();
+
+/**
 * This function will safely open a file att the specified path
 * and return a pointer to the opened file. Will exit the program if
 * the file could not be opened 
 *
 * Parameter:  (char *) Search path to the file to open
+*             (char *) Which mode to open the file in
 * Return:     (void *) pointer to the opened file
-* Note:       Will open the file in r+ mode
+* Note:       The file will still have to be closed manually
 */
-FILE *sfopen(char *path);
+FILE *sfopen(char *path, char *mode);
 
 /**
 * Reads the content of a specified file and returns an array containing 

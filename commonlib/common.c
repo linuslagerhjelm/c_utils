@@ -32,6 +32,7 @@ static __mem_tracker __mem = {NULL, 0};
 */
 void error(char *message){
   atexit (mem_free_func );
+  fflush(stdout);
   fprintf(stderr, "%s\n", message);
   exit(EXIT_FAILURE);
 }
@@ -56,21 +57,6 @@ void *salloc(size_t size){
 }
 
 /**
-* When this function is called, memory allocated with salloc() 
-* and memmory allocated elsewhere but registered with mem_reg() 
-* will be free'd
-*/
-void mem_free_func(){
-  for (size_t i = 0; i < __mem.size; ++i){ 
-    free(__mem.list[i]); 
-    __mem.list[i] = NULL;
-  } 
-  free(__mem.list);
-  __mem.list = NULL;
-  __mem.size = 0;
-}
-
-/**
 * Register memmory for the library to keep track of for
 * safe removal when mem_free_func() is called.
 * 
@@ -78,9 +64,43 @@ void mem_free_func(){
 * Return:     (void ) 
 * Note:       This function is allready called internally within salloc()
 */
-void mem_reg(void *p){
+void mem_reg(void *p) {
   __mem.list = realloc( __mem.list, ++(__mem.size)*sizeof(void **));
   __mem.list[__mem.size-1] = p;
+}
+
+/**
+*   This is a wrapper function for stdlib's implementatino of free()
+*   and should be used for deallocating memmory allocated using salloc()
+*   or memmory registered with mem_free_func() that needs to be free'd 
+*   before the call to mem_free_func()
+*
+*   Parameter:  (void *) pointer to the memory block to free
+*   Return:     (void)
+*/
+void mem_free(void *p) {
+    if(!p) { return; }
+    for(size_t i = 0; i < __mem.size; ++i) {
+        if(__mem.list[i] == p) {
+            free(__mem.list[i]); 
+            (__mem.list[i]) = NULL;
+        }
+    }
+}
+
+/**
+* When this function is called, memory allocated with salloc() 
+* and memmory allocated elsewhere but registered with mem_reg() 
+* will be free'd
+*/
+void mem_free_func() {
+  for (size_t i = 0; i < __mem.size; ++i){ 
+    free(__mem.list[i]); 
+    (__mem.list[i]) = NULL;
+  } 
+  free(__mem.list);
+  __mem.list = NULL;
+  __mem.size = 0;
 }
 
 /**
@@ -89,11 +109,12 @@ void mem_reg(void *p){
 * the file could not be opened 
 *
 * Parameter:  (char *) Search path to the file to open
+*             (char *) Which mode to open the file in
 * Return:     (void *) pointer to the opened file
-* Note:       Will open the file in r+ mode
+* Note:       The file will still have to be closed manually
 */
-FILE *sfopen(char *path){
-  FILE *fp = fopen(path, "r+");
+FILE *sfopen(char *path, char *mode) {
+  FILE *fp = fopen(path, mode);
   if(!fp){
     error("ERROR: could not open file");
   }
@@ -109,7 +130,7 @@ FILE *sfopen(char *path){
 * Return:     (char **) An array containing the lines of the file
 * Note:       The lines of the file can be no more than 1024 char
 */
-char **read_file(FILE *fp, int *n){
+char **read_file(FILE *fp, int *n) {
   int i = 0;
   char *buffer = salloc(BUFSIZ*sizeof(char));
   char **lines = NULL;
@@ -134,7 +155,7 @@ char **read_file(FILE *fp, int *n){
 *
 * Note:              Overrides the value of srand()
 */
-void initialize_random_array(int *array, int n, int range){
+void initialize_random_array(int *array, int n, int range) {
     timeval seed;
     gettimeofday(&seed, NULL);
     srand(seed.tv_usec * seed.tv_sec);
@@ -149,7 +170,7 @@ void initialize_random_array(int *array, int n, int range){
 * Parameter 1:  (int *) The array to print
 * Parameter 2:  (int) The size of the array
 */
-void print_array(int *array, int n){
+void print_array(int *array, int n) {
     for (int i = 0; i < n-1; ++i) {
         printf("%d, ", array[i]);
     }
@@ -162,7 +183,7 @@ void print_array(int *array, int n){
 * Parameter 1:  (int *) The array to search in
 * Parameter 2:  (int) Length of the array
 */
-int min_value_in(int *array, int n){
+int min_value_in(int *array, int n) {
     int min = array[0];
     for (int i = 1; i < n; ++i){
         if ( min > array[i] ) {
@@ -179,7 +200,7 @@ int min_value_in(int *array, int n){
 *
 * Return:        (int) smallest parameter value
 */
-int min(int n_args, ...){
+int min(int n_args, ...) {
     int min, temp;
     va_list next_arg;
     va_start(next_arg, n_args);
@@ -200,7 +221,7 @@ int min(int n_args, ...){
 * Parameter 1:  (int *) The array to search in
 * Parameter 2:  (int) Length of the array
 */
-int max_value_in(int *array, int n){
+int max_value_in(int *array, int n) {
     int max = array[0];
     for (int i = 1; i < n; ++i){
         if ( max < array[i] ) {
@@ -217,7 +238,7 @@ int max_value_in(int *array, int n){
 *
 * Return:        (int) largest parameter value
 */
-int max(int n_args, ...){
+int max(int n_args, ...) {
     int max, temp;
     va_list next_arg;
     va_start(next_arg, n_args);
