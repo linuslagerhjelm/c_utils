@@ -4,3 +4,4 @@ a.out.dSYM/
 *.h.gch
 .idea/
 .vscode/
+.DS_Store
