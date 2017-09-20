@@ -75,6 +75,21 @@ void noDelimReturnsUnmodifiedString() {
   printf("pass!\n");
 }
 
+void delimitersOtherThanSlashAreValid() {
+  printf("\t delimitersOtherThanSlashAreValid - ");
+  const char* STR = "*path*to*file*";
+  const char DELIM = '*';
+  char** parts = split(STR, DELIM, NULL);
+  assert(strncmp(parts[0], "path", 5) == 0);
+  assert(strncmp(parts[1], "to", 3) == 0);
+  assert(strncmp(parts[2], "file", 5) == 0);
+  free(parts[0]);
+  free(parts[1]);
+  free(parts[2]);
+  free(parts);
+  printf("pass!\n");
+}
+
 int main() {
   printf("Running tests: \n");
   testSunnyDayCase();
@@ -82,5 +97,6 @@ int main() {
   delimitersAreExcludedFromResult();
   consecutiveDelimsDoesNotCreateEmptyIndexes();
   noDelimReturnsUnmodifiedString();
+  delimitersOtherThanSlashAreValid();
   printf("All tests passed!\n");
 }
