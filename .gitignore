@@ -5,4 +5,5 @@ a.out.dSYM/
 .idea/
 .vscode/
 *.dSYM
+*.o
 
